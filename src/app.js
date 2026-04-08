@@ -817,7 +817,7 @@ function syncBehaviourDetail(detail, elementNode, behaviour) {
   detail.dataset.behaviourId = behaviour.id;
   detail.dataset.elementId = elementNode.id;
   detail.innerHTML = `
-    <span class="behaviour-detail__bulb" aria-hidden="true"><img src="/img/bulb.png" alt=""></span>
+    <span class="behaviour-detail__bulb" aria-hidden="true"><img src="img/bulb.png" alt=""></span>
     <h3>${escapeHtml(elementNode.name)}</h3>
     <div class="behaviour-detail__description">${behaviour.description}</div>
   `;
