@@ -21,8 +21,6 @@ const selectionBoard = document.querySelector(".selection-board");
 const progressTrack = document.querySelector(".progress-track");
 const selectionCard = document.querySelector(".selection-card");
 const behaviourScreen = document.querySelector(".behaviour-screen");
-const behaviourDetail = document.querySelector(".behaviour-detail");
-const behaviourOrbit = document.querySelector(".behaviour-orbit");
 const statementScreen = document.querySelector(".statement-screen");
 const reviewScreen = document.querySelector(".review-screen");
 
@@ -613,6 +611,7 @@ function renderBehaviourScreen(elementNode = null, requestedBehaviourId = null) 
   const session = currentSession();
   const elements = selectedElementNodes(session);
   const focusedElement = elementNode ?? elements.at(-1);
+  const shouldAnimate = activePage !== "behaviours";
 
   if (!session || !focusedElement) {
     renderSelectionScreen();
@@ -631,26 +630,33 @@ function renderBehaviourScreen(elementNode = null, requestedBehaviourId = null) 
   behaviourScreen.hidden = false;
   statementScreen.hidden = true;
   reviewScreen.hidden = true;
-  behaviourScreen.style.setProperty("--accent", focusedElement.color.accent);
-  behaviourScreen.style.setProperty("--accent-glow", focusedElement.color.glow);
-  behaviourDetail.dataset.behaviourId = selectedBehaviour.id;
-  behaviourDetail.dataset.elementId = focusedElement.id;
-  behaviourDetail.querySelector("h2").textContent = selectedBehaviour.name;
-  behaviourDetail.querySelector(".behaviour-detail__description").innerHTML = selectedBehaviour.description;
-  behaviourOrbit.replaceChildren(
+  behaviourScreen.style.setProperty("--cluster-count", String(elements.length));
+
+  const clusterGrid = document.createElement("div");
+  clusterGrid.className = "behaviour-cluster-grid";
+  clusterGrid.replaceChildren(...elements.map((selectedElement) => {
+    return createBehaviourCluster(
+      selectedElement,
+      selectedElement.id === focusedElement.id,
+      selectedElement.id === focusedElement.id ? selectedBehaviour.id : selectedBehaviourId(selectedElement)
+    );
+  }));
+
+  behaviourScreen.replaceChildren(
     createBehaviourIntro(elements.length),
-    ...elements.map((selectedElement) => createBehaviourRow(selectedElement, focusedElement.id, selectedBehaviour.id)),
-    behaviourDetail,
+    clusterGrid,
     createBehaviourActions(focusedElement, selectedBehaviour.id)
   );
 
-  behaviourScreen.animate(
-    [
-      { opacity: 0.92, transform: "translateY(4px)" },
-      { opacity: 1, transform: "translateY(0)" }
-    ],
-    { duration: 180, easing: "ease-out", fill: "forwards" }
-  );
+  if (shouldAnimate) {
+    behaviourScreen.animate(
+      [
+        { opacity: 0.92, transform: "translateY(4px) scale(0.985)" },
+        { opacity: 1, transform: "translateY(0) scale(1)" }
+      ],
+      { duration: 180, easing: "ease-out", fill: "forwards" }
+    );
+  }
 }
 
 function createBehaviourIntro(elementCount) {
@@ -667,40 +673,37 @@ function createBehaviourIntro(elementCount) {
   return intro;
 }
 
-function createBehaviourRow(elementNode, focusedElementId, focusedBehaviourId) {
-  const row = document.createElement("section");
-  row.className = "behaviour-row";
-  row.style.setProperty("--accent", elementNode.color.accent);
-  row.style.setProperty("--accent-glow", elementNode.color.glow);
-  row.setAttribute("aria-label", `${elementNode.name} behaviours`);
+function createBehaviourCluster(elementNode, isFocusedElement, focusedBehaviourId) {
+  const cluster = document.createElement("section");
+  cluster.className = "behaviour-cluster";
+  cluster.style.setProperty("--accent", elementNode.color.accent);
+  cluster.style.setProperty("--accent-glow", elementNode.color.glow);
+  cluster.dataset.elementId = elementNode.id;
+  cluster.dataset.focused = String(isFocusedElement);
+  cluster.setAttribute("aria-label", `${elementNode.name} behaviours`);
 
   const behaviours = behavioursForElement(elementNode);
   const selectedId = selectedBehaviourId(elementNode);
-  const isFocusedElement = elementNode.id === focusedElementId;
-
-  row.innerHTML = `
-    <div class="behaviour-row__element">
-      <strong>${escapeHtml(elementNode.name)}</strong>
-      <small>${isFocusedElement ? "Showing details" : "Selected element"}</small>
-    </div>
-    <div class="behaviour-row__divider" aria-hidden="true"></div>
-  `;
-
-  const scroller = document.createElement("div");
-  scroller.className = "behaviour-row__scroller";
-  scroller.replaceChildren(...behaviours.map((behaviour, index) => {
+  const selectedBehaviour = behaviours.find((behaviour) => behaviour.id === focusedBehaviourId) ?? behaviours[0];
+  const orbit = document.createElement("div");
+  orbit.className = "behaviour-cluster__orbit";
+  orbit.replaceChildren(...behaviours.map((behaviour, index) => {
     return createBehaviourButton(
       elementNode,
       behaviour,
       index,
       behaviours.length,
       selectedId === behaviour.id,
-      isFocusedElement && focusedBehaviourId === behaviour.id
+      selectedBehaviour.id === behaviour.id
     );
   }));
 
-  row.append(scroller);
-  return row;
+  const detail = document.createElement("article");
+  detail.className = "behaviour-detail";
+  syncBehaviourDetail(detail, elementNode, selectedBehaviour);
+
+  cluster.append(detail, orbit);
+  return cluster;
 }
 
 function createBehaviourActions(focusedElement, focusedBehaviourId) {
@@ -738,14 +741,21 @@ function selectedElementNodes(session) {
 
 function createBehaviourButton(elementNode, behaviour, index, total, isSelected, isFocused) {
   const button = document.createElement("button");
+  const angle = angleForBehaviourPosition(index, total);
+  const radius = behaviourRadiusForCount(total);
   const shadeProgress = total <= 1 ? 0 : index / (total - 1);
   const lightMix = `${Math.round(38 + shadeProgress * 50)}%`;
   const darkMix = `${Math.round(58 + shadeProgress * 32)}%`;
 
   button.className = "behaviour-button";
   button.type = "button";
+  button.style.setProperty("--angle", `${angle}deg`);
+  button.style.setProperty("--radius", `${radius}px`);
+  button.style.setProperty("--delay", `${index * 55}ms`);
   button.style.setProperty("--mix-light", lightMix);
   button.style.setProperty("--mix-dark", darkMix);
+  button.dataset.elementId = elementNode.id;
+  button.dataset.behaviourId = behaviour.id;
   button.dataset.selected = String(isSelected);
   button.dataset.focused = String(isFocused);
   button.setAttribute("aria-pressed", String(isSelected));
@@ -755,12 +765,143 @@ function createBehaviourButton(elementNode, behaviour, index, total, isSelected,
   button.addEventListener("click", () => {
     path = pathForNode(elementNode);
     persistSelection(elementNode, behaviour.id, "behaviours");
-    renderBehaviourScreen(elementNode, behaviour.id);
+    syncBehaviourSelectionState(elementNode, behaviour.id, button);
     renderProgressNav(elementNode);
     renderActiveSession();
   });
 
   return button;
+}
+
+function syncBehaviourDetail(detail, elementNode, behaviour) {
+  detail.dataset.behaviourId = behaviour.id;
+  detail.dataset.elementId = elementNode.id;
+  detail.innerHTML = `
+    <span class="behaviour-detail__bulb" aria-hidden="true"><img src="/img/bulb.png" alt=""></span>
+    <h3>${escapeHtml(elementNode.name)}</h3>
+    <div class="behaviour-detail__description">${behaviour.description}</div>
+  `;
+}
+
+function syncBehaviourSelectionState(focusedElement, focusedBehaviourId, triggerButton = null) {
+  const session = currentSession();
+  const elements = selectedElementNodes(session);
+
+  activeElement = focusedElement;
+  activePage = "behaviours";
+
+  behaviourScreen.querySelectorAll(".behaviour-cluster").forEach((cluster) => {
+    const elementNode = elements.find((element) => element.id === cluster.dataset.elementId);
+
+    if (!elementNode) {
+      return;
+    }
+
+    const isFocusedElement = elementNode.id === focusedElement.id;
+    const behaviours = behavioursForElement(elementNode);
+    const selectedBehaviour = behaviours.find((behaviour) => {
+      const behaviourId = isFocusedElement ? focusedBehaviourId : selectedBehaviourId(elementNode);
+      return behaviour.id === behaviourId;
+    }) ?? behaviours[0];
+
+    cluster.dataset.focused = String(isFocusedElement);
+
+    const detail = cluster.querySelector(".behaviour-detail");
+
+    if (detail) {
+      syncBehaviourDetail(detail, elementNode, selectedBehaviour);
+    }
+
+    cluster.querySelectorAll(".behaviour-button").forEach((button) => {
+      const isSelected = button.dataset.behaviourId === selectedBehaviourId(elementNode);
+      const isFocused = isFocusedElement && button.dataset.behaviourId === focusedBehaviourId;
+
+      button.dataset.selected = String(isSelected);
+      button.dataset.focused = String(isFocused);
+      button.setAttribute("aria-pressed", String(isSelected));
+    });
+  });
+
+  syncBehaviourActions(focusedElement, focusedBehaviourId);
+  animateBehaviourSelection(triggerButton);
+}
+
+function syncBehaviourActions(focusedElement, focusedBehaviourId) {
+  const existingActions = behaviourScreen.querySelector(".behaviour-actions");
+  const nextActions = createBehaviourActions(focusedElement, focusedBehaviourId);
+
+  if (existingActions) {
+    existingActions.replaceWith(nextActions);
+    return;
+  }
+
+  behaviourScreen.append(nextActions);
+}
+
+function animateBehaviourSelection(button) {
+  if (!button) {
+    return;
+  }
+
+  const cluster = button.closest(".behaviour-cluster");
+
+  if (!cluster) {
+    return;
+  }
+  const isCompact = window.matchMedia("(max-width: 680px)").matches;
+
+  cluster.querySelectorAll(".behaviour-button").forEach((item) => {
+    item.getAnimations().forEach((animation) => animation.cancel());
+
+    const delay = Number.parseInt(item.style.getPropertyValue("--delay"), 10) || 0;
+
+    if (isCompact) {
+      item.animate(
+        [
+          { opacity: 0, transform: "translateY(18px) scale(0.96)" },
+          { opacity: 1, transform: "translateY(0) scale(1)" }
+        ],
+        {
+          duration: 240,
+          delay,
+          easing: "ease-out",
+          fill: "both"
+        }
+      );
+
+      return;
+    }
+
+    const angle = item.style.getPropertyValue("--angle");
+    const radius = item.style.getPropertyValue("--radius");
+    const fromTransform = `translate(-50%, -50%) rotate(${angle}) translate(calc(${radius} * 0.72)) rotate(calc(${angle} * -1)) scale(0.76)`;
+    const toTransform = `translate(-50%, -50%) rotate(${angle}) translate(${radius}) rotate(calc(${angle} * -1)) scale(1)`;
+
+    item.animate(
+      [
+        { opacity: 0, transform: fromTransform },
+        { opacity: 1, transform: toTransform }
+      ],
+      {
+        duration: 360,
+        delay,
+        easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+        fill: "both"
+      }
+    );
+  });
+}
+
+function angleForBehaviourPosition(index, total) {
+  if (total <= 1) {
+    return -90;
+  }
+
+  return -90 + (360 / total) * index;
+}
+
+function behaviourRadiusForCount(total) {
+  return clamp(132, 26 * total + 120, 196);
 }
 
 function renderProgressNav(elementNode = activeElement) {
