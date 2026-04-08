@@ -64,7 +64,10 @@
 
       <section class="explorer" aria-label="Domain explorer" hidden>
         <div class="session-bar">
-          <button class="secondary-button" type="button" data-action="exit-session">Sessions</button>
+          <div class="session-bar__actions">
+            <button class="secondary-button" type="button" data-action="exit-session">Sessions</button>
+            <button class="secondary-button secondary-button--danger" type="button" data-action="clear-session">Clear session</button>
+          </div>
           <div class="active-session"></div>
         </div>
 
@@ -91,6 +94,20 @@
           </article>
         </div>
       </section>
+
+      <dialog class="confirm-dialog" aria-labelledby="clear-session-title">
+        <form class="confirm-dialog__panel" method="dialog">
+          <div class="confirm-dialog__copy">
+            <p class="eyebrow">Clear session</p>
+            <h2 id="clear-session-title">Start this session again?</h2>
+            <p>This will clear the current selections and notes for this avatar, then return you to the first screen.</p>
+          </div>
+          <div class="confirm-dialog__actions">
+            <button class="secondary-button" type="submit" value="cancel">Cancel</button>
+            <button class="primary-button primary-button--danger" type="submit" value="confirm">Clear session</button>
+          </div>
+        </form>
+      </dialog>
     </main>
 
     <script src="src/app.js" defer></script>

@@ -14,6 +14,8 @@ const themeToggle = document.querySelector("[data-action='toggle-theme']");
 const storageButton = document.querySelector("[data-action='show-session-store']");
 const storageDialog = document.querySelector(".storage-dialog");
 const storageDialogContent = document.querySelector(".storage-dialog__content");
+const clearSessionButton = document.querySelector("[data-action='clear-session']");
+const confirmDialog = document.querySelector(".confirm-dialog");
 const sessionList = document.querySelector(".session-list");
 const avatarGrid = document.querySelector(".avatar-grid");
 const activeSession = document.querySelector(".active-session");
@@ -102,6 +104,18 @@ function bindEvents() {
   storageButton.addEventListener("click", showStoredSessions);
   storageDialog.querySelector("[data-action='close-session-store']").addEventListener("click", () => {
     storageDialog.close();
+  });
+  clearSessionButton.addEventListener("click", () => {
+    if (!currentSession()) {
+      return;
+    }
+
+    confirmDialog.showModal();
+  });
+  confirmDialog.addEventListener("close", () => {
+    if (confirmDialog.returnValue === "confirm") {
+      clearCurrentSession();
+    }
   });
 }
 
@@ -321,6 +335,32 @@ function showView(view) {
   sessionHome.hidden = view !== "home";
   avatarPicker.hidden = view !== "avatars";
   explorer.hidden = view !== "explorer";
+}
+
+function clearCurrentSession() {
+  const session = currentSession();
+
+  if (!session) {
+    return;
+  }
+
+  const now = new Date().toISOString();
+  session.updated = now;
+  session.pageIndex = 0;
+  session.domain = null;
+  session.subDomain = null;
+  session.elements = [];
+  session.formFields = mergeFormFields([]);
+
+  path = [];
+  activeElement = null;
+  activePage = "selection";
+
+  saveSessions();
+  renderActiveSession();
+  renderProgressNav();
+  renderSelectionScreen();
+  showView("explorer");
 }
 
 function renderActiveSession() {
@@ -1069,19 +1109,21 @@ function renderReviewScreen() {
 
   reviewScreen.innerHTML = `
     <article class="statement-card review-card">
-      <p class="eyebrow">Final check</p>
-      <h2>Review Statement</h2>
+      <header class="print-review-header">
+        <p class="eyebrow">Final check</p>
+        <h2>Review Statement</h2>
+      </header>
 
       ${fieldMarkup("student-name", "Student's name")}
 
-      <dl class="review-list">
+      <dl class="review-list print-summary-grid">
         <div><dt>Domain</dt><dd>${escapeHtml(context.domain.name)}</dd></div>
         <div><dt>Elements</dt><dd>${context.items.length}</dd></div>
         <div><dt>Date</dt><dd>${escapeHtml(formValue("date") || "Not entered")}</dd></div>
         <div><dt>Observer</dt><dd>${escapeHtml(formValue("observer-name") || "Not entered")}</dd></div>
       </dl>
 
-      <section class="summary-block">
+      <section class="summary-block print-summary-block">
         <h3>Learning domain summary</h3>
         <p>${escapeHtml(context.domain.summary ?? "Summary to be added.")}</p>
       </section>
@@ -1126,7 +1168,7 @@ function fieldMarkup(name, label, kind = "input", type = "text") {
 
 function reviewTextBlock(label, name) {
   return `
-    <section class="review-text-block">
+    <section class="review-text-block print-text-section">
       <h3>${label}</h3>
       <p>${escapeHtml(formValue(name) || "Not entered")}</p>
     </section>
@@ -1135,19 +1177,19 @@ function reviewTextBlock(label, name) {
 
 function progressionStackMarkup(items) {
   return `
-    <section class="progression-stack" aria-label="Selected behaviours and next behaviours">
+    <section class="progression-stack print-progression-stack" aria-label="Selected behaviours and next behaviours">
       ${items.map((item) => `
-        <article class="progression-item" style="--accent: ${item.element.color.accent}">
+        <article class="progression-item print-progression-item" style="--accent: ${item.element.color.accent}">
           <div class="progression-item__heading">
             <h3>${escapeHtml(item.element.name)}</h3>
           </div>
-          <div class="evidence-grid">
-            <div class="evidence-panel">
+          <div class="evidence-grid print-evidence-grid">
+            <div class="evidence-panel print-evidence-panel">
               <h3>What you observed</h3>
               <p class="behaviour-name">${escapeHtml(item.behaviour.name)}</p>
               ${item.behaviour.description}
             </div>
-            <div class="evidence-panel">
+            <div class="evidence-panel print-evidence-panel">
               <h3>What is likely to be the next step in learning progression</h3>
               <p class="behaviour-name">${escapeHtml(item.nextBehaviour?.name ?? "Final behaviour")}</p>
               ${item.nextBehaviour?.description ?? "<p>This is the final behaviour currently available for this element.</p>"}
