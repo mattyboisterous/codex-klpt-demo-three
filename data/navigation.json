@@ -1,0 +1,24 @@
+{
+  "steps": [
+    {
+      "id": "selection",
+      "title": "Selection",
+      "description": "Choose the domain, subdomain and one or more elements."
+    },
+    {
+      "id": "behaviours",
+      "title": "Behaviours",
+      "description": "Choose the behaviour that best describes the child's current learning journey."
+    },
+    {
+      "id": "statement",
+      "title": "Statement",
+      "description": "Complete the learning progression statement and observation notes."
+    },
+    {
+      "id": "review",
+      "title": "Review",
+      "description": "Review the saved statement and prepare a PDF copy."
+    }
+  ]
+}
