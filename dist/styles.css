@@ -1024,6 +1024,18 @@ body[data-theme="dark"] .form-field textarea {
   color: #eef5fd;
   background: rgba(255, 255, 255, 0.06); }
 
+body[data-theme="dark"] .form-field input[type="date"] {
+  color-scheme: dark; }
+
+body[data-theme="dark"] .form-field input[type="date"]::-webkit-calendar-picker-indicator {
+  border-radius: 8px;
+  background-color: rgba(125, 184, 255, 0.14);
+  filter: invert(0.92) hue-rotate(180deg) brightness(1.05); }
+
+body[data-theme="dark"] .form-field input[type="date"]::-webkit-datetime-edit,
+body[data-theme="dark"] .form-field input[type="date"]::-webkit-date-and-time-value {
+  color: #eef5fd; }
+
 body[data-theme="dark"] .form-field input::placeholder,
 body[data-theme="dark"] .form-field textarea::placeholder {
   color: #9fb4ca; }
@@ -1282,6 +1294,32 @@ body[data-theme="dark"] .primary-button {
     break-after: avoid;
     page-break-after: avoid; }
 
+  .review-card .form-field {
+    margin-bottom: 6mm; }
+
+  .print-summary-grid {
+    margin-top: 2mm;
+    margin-bottom: 6mm; }
+
+  .print-summary-block {
+    margin-top: 0;
+    margin-bottom: 0;
+    break-after: page;
+    page-break-after: always; }
+
+  .print-review-header .eyebrow,
+  .print-review-header h2 {
+    display: none !important; }
+
+  .print-review-header::before {
+    display: block;
+    margin-bottom: 4mm;
+    color: #111;
+    font-size: 24pt;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    content: "Child Progression Statement"; }
+
   .print-progression-stack {
     gap: 10mm; }
 
@@ -1314,9 +1352,6 @@ body[data-theme="dark"] .primary-button {
   .review-card .form-field textarea {
     border-color: #c4ccd6;
     background: #fff; }
-
-  .review-card h2 {
-    font-size: 24pt; }
 
   .review-card h3,
   .statement-card h3 {
