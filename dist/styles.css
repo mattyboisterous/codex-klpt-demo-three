@@ -284,6 +284,15 @@ body[data-theme="dark"] .evidence-panel ul,
 body[data-theme="dark"] .review-text-block p {
   color: #dbe7f3; }
 
+body[data-theme="dark"] .statement-card h3,
+body[data-theme="dark"] .summary-block h3,
+body[data-theme="dark"] .evidence-panel h3,
+body[data-theme="dark"] .review-text-block h3,
+body[data-theme="dark"] .progression-item__heading h3,
+body[data-theme="dark"] .review-list dt,
+body[data-theme="dark"] .behaviour-name {
+  color: #9ecbff; }
+
 body[data-theme="dark"] .behaviour-cluster {
   background: radial-gradient(circle at center, rgba(125, 184, 255, 0.08) 0, rgba(125, 184, 255, 0.08) 28%, transparent 29%), linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
   box-shadow: inset 0 0 0 1px rgba(125, 184, 255, 0.12); }
@@ -487,6 +496,9 @@ body[data-theme="dark"] .confirm-dialog__panel {
   background: rgba(11, 24, 39, 0.96);
   box-shadow: 0 30px 90px rgba(0, 0, 0, 0.4); }
 
+body[data-theme="dark"] .confirm-dialog__copy h2 {
+  color: #eef5fd; }
+
 body[data-theme="dark"] .confirm-dialog__copy p:not(.eyebrow) {
   color: #b3c4d8; }
 
@@ -621,7 +633,7 @@ body[data-theme="dark"] .progress-track::before {
 
 body[data-theme="dark"] .progress-step[data-state="pending"] .progress-step__node {
   color: #b3c4d8;
-  background: rgba(255, 255, 255, 0.08);
+  background: #12263a;
   box-shadow: inset 0 0 0 2px rgba(125, 184, 255, 0.12); }
 
 body[data-theme="dark"] .progress-step[data-state="complete"],
