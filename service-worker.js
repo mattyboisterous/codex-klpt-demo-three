@@ -1,17 +1,17 @@
-const CACHE_NAME = "codex-klpt-demo-two-v1";
+const CACHE_NAME = "codex-klpt-demo-three-v1";
 const ASSETS = [
-  "/",
-  "/index.html",
-  "/dist/styles.css",
-  "/src/app.js",
-  "/data/domains.json",
-  "/data/avatars.json",
-  "/data/navigation.json",
-  "/img/avatars/pink-pig.png",
-  "/img/avatars/yellow-horse.png",
-  "/img/avatars/red-dog.png",
-  "/img/avatars/white-dolphin.png",
-  "/manifest.webmanifest"
+  "./",
+  "./index.html",
+  "./dist/styles.css",
+  "./src/app.js",
+  "./data/domains.json",
+  "./data/avatars.json",
+  "./data/navigation.json",
+  "./img/avatars/pink-pig.png",
+  "./img/avatars/yellow-horse.png",
+  "./img/avatars/red-dog.png",
+  "./img/avatars/white-dolphin.png",
+  "./manifest.webmanifest"
 ];
 
 self.addEventListener("install", (event) => {
