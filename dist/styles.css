@@ -492,39 +492,42 @@ body[data-theme="dark"] .icon-button:focus-visible {
   justify-content: flex-end;
   gap: 10px; }
 
-.update-snackbar {
-  position: fixed;
-  right: clamp(16px, 3vw, 28px);
-  bottom: clamp(16px, 3vw, 28px);
-  z-index: 20;
-  display: flex;
-  gap: 18px;
-  align-items: center;
-  width: min(520px, calc(100% - 32px));
-  border-radius: 18px;
-  padding: 16px 18px;
+.update-dialog {
+  width: min(500px, calc(100% - 32px));
+  border: 0;
+  padding: 0;
   color: #10233c;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 22px 60px rgba(24, 35, 63, 0.24);
-  backdrop-filter: blur(16px); }
+  background: transparent; }
+  .update-dialog::backdrop {
+    background: rgba(24, 35, 63, 0.38);
+    backdrop-filter: blur(5px); }
 
-.update-snackbar__copy {
+.update-dialog__panel {
   display: grid;
-  gap: 4px;
-  flex: 1; }
-  .update-snackbar__copy strong,
-  .update-snackbar__copy p {
-    margin: 0; }
-  .update-snackbar__copy strong {
-    font-size: 0.98rem;
-    letter-spacing: -0.02em; }
-  .update-snackbar__copy p {
-    color: #5e6f84;
-    line-height: 1.45; }
+  gap: 24px;
+  margin: 0;
+  border-radius: 18px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 30px 90px rgba(24, 35, 63, 0.24); }
 
-.update-snackbar__actions {
+.update-dialog__copy {
+  display: grid;
+  gap: 12px; }
+  .update-dialog__copy h2,
+  .update-dialog__copy p {
+    margin: 0; }
+  .update-dialog__copy h2 {
+    font-size: clamp(1.55rem, 3.8vw, 2.1rem);
+    letter-spacing: -0.05em; }
+  .update-dialog__copy p {
+    color: #5e6f84;
+    line-height: 1.6; }
+
+.update-dialog__actions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 10px; }
 
 body[data-theme="dark"] .confirm-dialog__panel {
@@ -537,12 +540,14 @@ body[data-theme="dark"] .confirm-dialog__copy h2 {
 body[data-theme="dark"] .confirm-dialog__copy p:not(.eyebrow) {
   color: #b3c4d8; }
 
-body[data-theme="dark"] .update-snackbar {
-  color: #eef5fd;
+body[data-theme="dark"] .update-dialog__panel {
   background: rgba(11, 24, 39, 0.96);
-  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.36); }
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.4); }
 
-body[data-theme="dark"] .update-snackbar__copy p {
+body[data-theme="dark"] .update-dialog__copy h2 {
+  color: #eef5fd; }
+
+body[data-theme="dark"] .update-dialog__copy p {
   color: #b3c4d8; }
 
 .active-session {
@@ -1169,12 +1174,8 @@ body[data-theme="dark"] .form-field textarea::placeholder {
 
   .session-bar__actions,
   .confirm-dialog__actions,
-  .update-snackbar__actions {
+  .update-dialog__actions {
     width: 100%; }
-
-  .update-snackbar {
-    align-items: flex-start;
-    flex-direction: column; }
 
   .active-session {
     text-align: left; }

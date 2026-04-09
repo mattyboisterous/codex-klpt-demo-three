@@ -109,51 +109,107 @@
         </form>
       </dialog>
 
-      <aside class="update-snackbar" hidden aria-live="polite">
-        <div class="update-snackbar__copy">
-          <strong>Update available</strong>
-          <p>A newer version of this page is ready.</p>
-        </div>
-        <div class="update-snackbar__actions">
-          <button class="secondary-button" type="button" data-action="dismiss-update">Dismiss</button>
-          <button class="primary-button" type="button" data-action="apply-update">Refresh</button>
-        </div>
-      </aside>
+      <dialog class="update-dialog" aria-labelledby="update-dialog-title">
+        <form class="update-dialog__panel" method="dialog">
+          <div class="update-dialog__copy">
+            <p class="eyebrow">Update available</p>
+            <h2 id="update-dialog-title">Refresh to load the latest content?</h2>
+            <p>A newer version of this page is ready. Refresh now to pull in the latest form, styles, and learning content.</p>
+          </div>
+          <div class="update-dialog__actions">
+            <button class="secondary-button" type="submit" value="dismiss">Dismiss</button>
+            <button class="primary-button" type="submit" value="refresh">Refresh</button>
+          </div>
+        </form>
+      </dialog>
     </main>
 
     <script src="src/app.js" defer></script>
     <script>
       if ("serviceWorker" in navigator) {
+        const CONTENT_CHECK_PATHS = [
+          "index.html",
+          "dist/styles.css",
+          "src/app.js",
+          "data/domains.json",
+          "data/avatars.json",
+          "data/navigation.json"
+        ];
+        const CONTENT_CHECK_INTERVAL = 5 * 60 * 1000;
+
         let updatePromptShown = false;
         let refreshingForUpdate = false;
         let pendingUpdateWorker = null;
+        let initialContentSignature = null;
 
-        const updateSnackbar = document.querySelector(".update-snackbar");
-        const dismissUpdateButton = document.querySelector("[data-action='dismiss-update']");
-        const applyUpdateButton = document.querySelector("[data-action='apply-update']");
+        const updateDialog = document.querySelector(".update-dialog");
 
-        function promptForServiceWorkerUpdate(worker) {
+        function promptForUpdate(worker = null) {
           if (updatePromptShown) {
             return;
           }
 
           updatePromptShown = true;
           pendingUpdateWorker = worker;
-          updateSnackbar.hidden = false;
+          if (!updateDialog.open) {
+            updateDialog.showModal();
+          }
         }
 
-        dismissUpdateButton?.addEventListener("click", () => {
-          updateSnackbar.hidden = true;
-        });
-
-        applyUpdateButton?.addEventListener("click", () => {
-          if (!pendingUpdateWorker) {
+        updateDialog?.addEventListener("close", () => {
+          if (updateDialog.returnValue !== "refresh") {
             return;
           }
 
-          updateSnackbar.hidden = true;
-          pendingUpdateWorker.postMessage({ type: "SKIP_WAITING" });
+          if (pendingUpdateWorker) {
+            pendingUpdateWorker.postMessage({ type: "SKIP_WAITING" });
+            return;
+          }
+
+          window.location.reload();
         });
+
+        async function signatureForPath(path) {
+          const requestUrl = new URL(path, window.location.href);
+          requestUrl.searchParams.set("update-check", Date.now().toString());
+
+          const headResponse = await fetch(requestUrl, {
+            method: "HEAD",
+            cache: "no-store"
+          });
+
+          if (!headResponse.ok) {
+            throw new Error(`Unable to check ${path}: ${headResponse.status}`);
+          }
+
+          const etag = headResponse.headers.get("etag") ?? "";
+          const modified = headResponse.headers.get("last-modified") ?? "";
+          const length = headResponse.headers.get("content-length") ?? "";
+
+          return `${path}|${etag}|${modified}|${length}`;
+        }
+
+        async function readContentSignature() {
+          const signatures = await Promise.all(CONTENT_CHECK_PATHS.map((path) => signatureForPath(path)));
+          return signatures.join("::");
+        }
+
+        async function monitorContentUpdates() {
+          try {
+            const nextSignature = await readContentSignature();
+
+            if (!initialContentSignature) {
+              initialContentSignature = nextSignature;
+              return;
+            }
+
+            if (nextSignature !== initialContentSignature) {
+              promptForUpdate();
+            }
+          } catch (error) {
+            console.warn("Content update check failed", error);
+          }
+        }
 
         navigator.serviceWorker.addEventListener("controllerchange", () => {
           if (refreshingForUpdate) {
@@ -170,7 +226,7 @@
 
           navigator.serviceWorker.register(serviceWorkerUrl, { scope: serviceWorkerScope.pathname }).then((registration) => {
             if (registration.waiting && navigator.serviceWorker.controller) {
-              promptForServiceWorkerUpdate(registration.waiting);
+              promptForUpdate(registration.waiting);
             }
 
             registration.addEventListener("updatefound", () => {
@@ -178,7 +234,7 @@
 
               newWorker?.addEventListener("statechange", () => {
                 if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                  promptForServiceWorkerUpdate(newWorker);
+                  promptForUpdate(newWorker);
                 }
               });
             });
@@ -186,6 +242,9 @@
             registration.update();
             window.setInterval(() => registration.update(), 60 * 60 * 1000);
           });
+
+          monitorContentUpdates();
+          window.setInterval(monitorContentUpdates, CONTENT_CHECK_INTERVAL);
         });
       }
     </script>
