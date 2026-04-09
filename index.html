@@ -135,12 +135,11 @@
           "data/avatars.json",
           "data/navigation.json"
         ];
-        const CONTENT_CHECK_INTERVAL = 5 * 60 * 1000;
+        const CONTENT_SIGNATURE_KEY = "codex-klpt-demo-three-content-signature";
 
         let updatePromptShown = false;
         let refreshingForUpdate = false;
         let pendingUpdateWorker = null;
-        let initialContentSignature = null;
 
         const updateDialog = document.querySelector(".update-dialog");
 
@@ -194,18 +193,16 @@
           return signatures.join("::");
         }
 
-        async function monitorContentUpdates() {
+        async function checkForContentUpdate() {
           try {
             const nextSignature = await readContentSignature();
+            const previousSignature = window.localStorage.getItem(CONTENT_SIGNATURE_KEY);
 
-            if (!initialContentSignature) {
-              initialContentSignature = nextSignature;
-              return;
-            }
-
-            if (nextSignature !== initialContentSignature) {
+            if (previousSignature && previousSignature !== nextSignature) {
               promptForUpdate();
             }
+
+            window.localStorage.setItem(CONTENT_SIGNATURE_KEY, nextSignature);
           } catch (error) {
             console.warn("Content update check failed", error);
           }
@@ -243,8 +240,7 @@
             window.setInterval(() => registration.update(), 60 * 60 * 1000);
           });
 
-          monitorContentUpdates();
-          window.setInterval(monitorContentUpdates, CONTENT_CHECK_INTERVAL);
+          checkForContentUpdate();
         });
       }
     </script>
