@@ -108,6 +108,17 @@
           </div>
         </form>
       </dialog>
+
+      <aside class="update-snackbar" hidden aria-live="polite">
+        <div class="update-snackbar__copy">
+          <strong>Update available</strong>
+          <p>A newer version of this page is ready.</p>
+        </div>
+        <div class="update-snackbar__actions">
+          <button class="secondary-button" type="button" data-action="dismiss-update">Dismiss</button>
+          <button class="primary-button" type="button" data-action="apply-update">Refresh</button>
+        </div>
+      </aside>
     </main>
 
     <script src="src/app.js" defer></script>
@@ -115,6 +126,11 @@
       if ("serviceWorker" in navigator) {
         let updatePromptShown = false;
         let refreshingForUpdate = false;
+        let pendingUpdateWorker = null;
+
+        const updateSnackbar = document.querySelector(".update-snackbar");
+        const dismissUpdateButton = document.querySelector("[data-action='dismiss-update']");
+        const applyUpdateButton = document.querySelector("[data-action='apply-update']");
 
         function promptForServiceWorkerUpdate(worker) {
           if (updatePromptShown) {
@@ -122,11 +138,22 @@
           }
 
           updatePromptShown = true;
-
-          if (window.confirm("A new version is available. Refresh now to update?")) {
-            worker.postMessage({ type: "SKIP_WAITING" });
-          }
+          pendingUpdateWorker = worker;
+          updateSnackbar.hidden = false;
         }
+
+        dismissUpdateButton?.addEventListener("click", () => {
+          updateSnackbar.hidden = true;
+        });
+
+        applyUpdateButton?.addEventListener("click", () => {
+          if (!pendingUpdateWorker) {
+            return;
+          }
+
+          updateSnackbar.hidden = true;
+          pendingUpdateWorker.postMessage({ type: "SKIP_WAITING" });
+        });
 
         navigator.serviceWorker.addEventListener("controllerchange", () => {
           if (refreshingForUpdate) {
