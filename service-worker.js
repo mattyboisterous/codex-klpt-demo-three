@@ -56,8 +56,25 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  if (isAppShellRequest(requestUrl)) {
+    event.respondWith(networkFirst(event.request));
+    return;
+  }
+
   event.respondWith(staleWhileRevalidate(event.request));
 });
+
+function isAppShellRequest(requestUrl) {
+  return (
+    requestUrl.pathname.endsWith("/index.html") ||
+    requestUrl.pathname.endsWith("/dist/styles.css") ||
+    requestUrl.pathname.endsWith("/src/app.js") ||
+    requestUrl.pathname.endsWith("/manifest.webmanifest") ||
+    requestUrl.pathname.endsWith("/data/domains.json") ||
+    requestUrl.pathname.endsWith("/data/avatars.json") ||
+    requestUrl.pathname.endsWith("/data/navigation.json")
+  );
+}
 
 async function networkFirst(request) {
   const cache = await caches.open(CACHE_NAME);
