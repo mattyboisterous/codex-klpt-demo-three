@@ -138,7 +138,10 @@
         });
 
         window.addEventListener("load", () => {
-          navigator.serviceWorker.register("service-worker.js").then((registration) => {
+          const serviceWorkerUrl = new URL("service-worker.js", window.location.href);
+          const serviceWorkerScope = new URL(".", window.location.href);
+
+          navigator.serviceWorker.register(serviceWorkerUrl, { scope: serviceWorkerScope.pathname }).then((registration) => {
             if (registration.waiting && navigator.serviceWorker.controller) {
               promptForServiceWorkerUpdate(registration.waiting);
             }
