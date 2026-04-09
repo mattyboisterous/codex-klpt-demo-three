@@ -1,4 +1,4 @@
-const CACHE_NAME = "codex-klpt-demo-three-v1";
+const CACHE_NAME = "codex-klpt-demo-three-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -7,10 +7,17 @@ const ASSETS = [
   "./data/domains.json",
   "./data/avatars.json",
   "./data/navigation.json",
-  "./img/avatars/pink-pig.png",
-  "./img/avatars/yellow-horse.png",
-  "./img/avatars/red-dog.png",
-  "./img/avatars/white-dolphin.png",
+  "./img/klpt-logo.png",
+  "./img/bulb.png",
+  "./img/avatars/planet-preview.png",
+  "./img/avatars/mercury.png",
+  "./img/avatars/venus.png",
+  "./img/avatars/earth.png",
+  "./img/avatars/mars.png",
+  "./img/avatars/jupiter.png",
+  "./img/avatars/saturn.png",
+  "./img/avatars/uranus.png",
+  "./img/avatars/neptune.png",
   "./manifest.webmanifest"
 ];
 
